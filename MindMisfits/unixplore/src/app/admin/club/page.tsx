@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, LogOut, Users, RefreshCw } from 'lucide-react';
+import { Loader2, LogOut, Users, RefreshCw, LayoutDashboard, Megaphone, Calendar, Settings, ChevronRight, Plus, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Stats {
     announcement_count: number;
@@ -30,6 +31,7 @@ export default function ClubAdminPage() {
         email: '',
         password: '',
     });
+    const [activeTab, setActiveTab] = useState('dashboard');
 
     useEffect(() => {
         const token = localStorage.getItem('club_token');
@@ -52,8 +54,6 @@ export default function ClubAdminPage() {
 
             if (data.success) {
                 setStats(data.data);
-                // If we have admin data in the response, update it. 
-                // Currently stats API might not return full admin profile, but we can assume token is valid.
             } else {
                 if (response.status === 401) handleLogout();
             }
@@ -192,29 +192,32 @@ export default function ClubAdminPage() {
 
     const getStatusBadge = (status: string) => {
         const variants: Record<string, any> = {
-            approved: { variant: 'default', label: 'Approved' },
-            pending: { variant: 'secondary', label: 'Pending Approval' },
-            rejected: { variant: 'destructive', label: 'Rejected' },
+            approved: { variant: 'default', label: 'Approved', className: 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border-green-500/50' },
+            pending: { variant: 'secondary', label: 'Pending Approval', className: 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 border-yellow-500/50' },
+            rejected: { variant: 'destructive', label: 'Rejected', className: 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/50' },
         };
         const config = variants[status] || variants.pending;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <Badge variant="outline" className={config.className}>{config.label}</Badge>;
     };
 
     if (!isLoggedIn) {
         return (
-            <div className="min-h-screen py-12">
-                <div className="container-custom max-w-md">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                    <Users className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl">Club Admin</CardTitle>
-                                    <CardDescription>Login to your dashboard</CardDescription>
-                                </div>
+            <div className="min-h-screen flex items-center justify-center p-4 bg-black relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-purple-900/20 to-black z-0" />
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 z-0" />
+
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="max-w-md w-full relative z-10"
+                >
+                    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+                        <CardHeader className="text-center pb-2">
+                            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mb-4">
+                                <Users className="h-8 w-8 text-primary" />
                             </div>
+                            <CardTitle className="text-2xl font-bold text-white">Club Admin</CardTitle>
+                            <CardDescription>Login to manage your community</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleLogin} className="space-y-4">
@@ -224,270 +227,397 @@ export default function ClubAdminPage() {
                                     </div>
                                 )}
 
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">Email</label>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Email</label>
                                     <Input
                                         required
                                         type="email"
                                         value={credentials.email}
                                         onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                                         placeholder="admin@example.com"
+                                        className="bg-white/5 border-white/10 focus:border-primary"
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">Password</label>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Password</label>
                                     <Input
                                         required
                                         type="password"
                                         value={credentials.password}
                                         onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                        placeholder="Enter your password"
+                                        placeholder="••••••••"
+                                        className="bg-white/5 border-white/10 focus:border-primary"
                                     />
                                 </div>
 
-                                <Button type="submit" className="w-full" disabled={loading}>
+                                <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90" disabled={loading}>
                                     {loading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                             Logging in...
                                         </>
                                     ) : (
-                                        'Login'
+                                        'Login to Dashboard'
                                     )}
                                 </Button>
 
                                 <p className="text-sm text-center text-muted-foreground">
                                     Don&apos;t have an account?{' '}
-                                    <a href="/register/club" className="text-primary hover:underline">
+                                    <a href="/register/club" className="text-primary hover:underline font-medium">
                                         Register Club
                                     </a>
                                 </p>
                             </form>
                         </CardContent>
                     </Card>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen py-12">
-            <div className="container-custom max-w-6xl">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2">Club Admin Dashboard</h1>
-                        {adminData && (
-                            <>
-                                <p className="text-muted-foreground mb-2">{adminData.clubName}</p>
-                                {adminData.clubStatus && getStatusBadge(adminData.clubStatus)}
-                            </>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="icon" onClick={fetchStats} disabled={statsLoading}>
-                            <RefreshCw className={`h-4 w-4 ${statsLoading ? 'animate-spin' : ''}`} />
-                        </Button>
-                        <Button variant="outline" onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Logout
-                        </Button>
+        <div className="min-h-screen bg-background flex">
+            {/* Sidebar */}
+            <div className="w-64 bg-card border-r border-white/10 hidden md:flex flex-col">
+                <div className="p-6 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                            <Users className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-white">UniXplore</h2>
+                            <p className="text-xs text-muted-foreground">Club Admin</p>
+                        </div>
                     </div>
                 </div>
 
-                {adminData?.clubStatus === 'pending' && (
-                    <Card className="mb-8 border-yellow-200 bg-yellow-50">
-                        <CardContent className="pt-6">
-                            <p className="text-sm">
-                                <strong>Pending Approval:</strong> Your club registration is awaiting approval from your college admin.
-                                You&apos;ll be able to access all dashboard features once approved.
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
+                <div className="flex-1 py-6 px-4 space-y-2">
+                    <Button
+                        variant={activeTab === 'dashboard' ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('dashboard')}
+                    >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                    </Button>
+                    <Button
+                        variant={activeTab === 'announcements' ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('announcements')}
+                    >
+                        <Megaphone className="mr-2 h-4 w-4" />
+                        Announcements
+                    </Button>
+                    <Button
+                        variant={activeTab === 'registrations' ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('registrations')}
+                    >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Registrations
+                    </Button>
+                    <Button
+                        variant={activeTab === 'settings' ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('settings')}
+                    >
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                    </Button>
+                </div>
 
-                {adminData?.clubStatus === 'rejected' && (
-                    <Card className="mb-8 border-destructive bg-destructive/10">
-                        <CardContent className="pt-6">
-                            <p className="text-sm text-destructive">
-                                <strong>Registration Rejected:</strong> Your club registration was not approved.
-                                Please contact your college admin for more information.
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {(!adminData?.clubStatus || adminData?.clubStatus === 'approved') && (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Announcements</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-3xl font-bold">{stats?.announcement_count ?? '-'}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">Published</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Registrations</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-3xl font-bold">{stats?.active_registrations ?? '-'}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">Active</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Page Views</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-3xl font-bold">{stats?.total_views ?? '-'}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">Total views</p>
-                                </CardContent>
-                            </Card>
+                <div className="p-4 border-t border-white/10">
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-xs font-bold text-primary">CA</span>
                         </div>
+                        <div className="overflow-hidden">
+                            <p className="text-sm font-medium truncate text-white">Admin</p>
+                            <p className="text-xs text-muted-foreground truncate">{adminData?.clubName}</p>
+                        </div>
+                    </div>
+                    <Button variant="outline" className="w-full border-white/10 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                    </Button>
+                </div>
+            </div>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Dashboard Features</CardTitle>
-                                <CardDescription>Manage your club content</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {/* Edit Details Dialog */}
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                                                <h3 className="font-semibold mb-2">Edit Club Details</h3>
-                                                <p className="text-sm text-muted-foreground mb-3">
-                                                    Update description, contact info, and social links
-                                                </p>
-                                                <Button variant="outline" size="sm">Edit Details</Button>
-                                            </div>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-2xl">
-                                            <DialogHeader>
-                                                <DialogTitle>Edit Club Details</DialogTitle>
-                                                <DialogDescription>Update your club&apos;s public information</DialogDescription>
-                                            </DialogHeader>
-                                            <form onSubmit={handleUpdateDetails} className="space-y-4 mt-4">
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Description</label>
-                                                    <Textarea
-                                                        name="description"
-                                                        placeholder="About your club..."
-                                                        className="min-h-[100px]"
-                                                        defaultValue={adminData?.description}
-                                                    />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="text-sm font-medium mb-1.5 block">Email</label>
-                                                        <Input name="email" type="email" defaultValue={adminData?.email} />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-sm font-medium mb-1.5 block">Phone</label>
-                                                        <Input name="phone" type="tel" defaultValue={adminData?.phone} />
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="text-sm font-medium mb-1.5 block">Website</label>
-                                                        <Input name="website" type="url" placeholder="https://" defaultValue={adminData?.website} />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-sm font-medium mb-1.5 block">Instagram</label>
-                                                        <Input name="instagram" placeholder="@username" defaultValue={adminData?.instagram} />
-                                                    </div>
-                                                </div>
-                                                <Button type="submit" className="w-full" disabled={loading}>
-                                                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
-                                                </Button>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <header className="h-16 border-b border-white/10 bg-card/50 backdrop-blur-sm flex items-center justify-between px-6">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-xl font-semibold text-white">
+                            {activeTab === 'dashboard' && 'Dashboard Overview'}
+                            {activeTab === 'announcements' && 'Announcements'}
+                            {activeTab === 'registrations' && 'Manage Registrations'}
+                            {activeTab === 'settings' && 'Club Settings'}
+                        </h1>
+                        {adminData?.clubStatus && getStatusBadge(adminData.clubStatus)}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Button variant="outline" size="icon" onClick={fetchStats} disabled={statsLoading} className="border-white/10">
+                            <RefreshCw className={`h-4 w-4 ${statsLoading ? 'animate-spin' : ''}`} />
+                        </Button>
+                    </div>
+                </header>
 
-                                    {/* New Announcement Dialog */}
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                                                <h3 className="font-semibold mb-2">Post Announcement</h3>
-                                                <p className="text-sm text-muted-foreground mb-3">
-                                                    Create and publish announcements for your club members
-                                                </p>
-                                                <Button variant="outline" size="sm">New Announcement</Button>
-                                            </div>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>New Announcement</DialogTitle>
-                                                <DialogDescription>Post an update for your club members</DialogDescription>
-                                            </DialogHeader>
-                                            <form onSubmit={handlePostAnnouncement} className="space-y-4 mt-4">
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Title</label>
-                                                    <Input name="title" required placeholder="Announcement Title" />
-                                                </div>
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Content</label>
-                                                    <Textarea
-                                                        name="content"
-                                                        required
-                                                        placeholder="Write your announcement here..."
-                                                        className="min-h-[150px]"
-                                                    />
-                                                </div>
-                                                <Button type="submit" className="w-full" disabled={loading}>
-                                                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Post Announcement'}
-                                                </Button>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
+                {/* Content Scrollable Area */}
+                <main className="flex-1 overflow-y-auto p-6">
+                    <div className="max-w-6xl mx-auto space-y-8">
+                        {adminData?.clubStatus === 'pending' && (
+                            <Card className="border-yellow-500/20 bg-yellow-500/10 mb-6">
+                                <CardContent className="pt-6 flex items-start gap-4">
+                                    <div className="p-2 bg-yellow-500/20 rounded-lg">
+                                        <Loader2 className="h-5 w-5 text-yellow-500 animate-spin" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-yellow-500 mb-1">Pending Approval</h3>
+                                        <p className="text-sm text-yellow-200/80">
+                                            Your club registration is awaiting approval from your college admin.
+                                            Some features may be limited until approved.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
 
-                                    {/* Add Registration Dialog */}
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                                                <h3 className="font-semibold mb-2">Manage Registrations</h3>
-                                                <p className="text-sm text-muted-foreground mb-3">
-                                                    Add registration links and manage recruitment drives
-                                                </p>
-                                                <Button variant="outline" size="sm">Add Registration</Button>
-                                            </div>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Add Registration Link</DialogTitle>
-                                                <DialogDescription>Create a new registration event</DialogDescription>
-                                            </DialogHeader>
-                                            <form onSubmit={handleAddRegistration} className="space-y-4 mt-4">
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Event Title</label>
-                                                    <Input name="title" required placeholder="e.g. Winter Recruitment 2024" />
-                                                </div>
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Registration Link</label>
-                                                    <Input name="link" type="url" required placeholder="https://forms.google.com/..." />
-                                                </div>
-                                                <div>
-                                                    <label className="text-sm font-medium mb-1.5 block">Deadline (Optional)</label>
-                                                    <Input name="deadline" type="datetime-local" />
-                                                </div>
-                                                <Button type="submit" className="w-full" disabled={loading}>
-                                                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Registration'}
-                                                </Button>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
+                        {adminData?.clubStatus === 'rejected' && (
+                            <Card className="border-destructive/20 bg-destructive/10 mb-6">
+                                <CardContent className="pt-6 flex items-start gap-4">
+                                    <div className="p-2 bg-destructive/20 rounded-lg">
+                                        <LogOut className="h-5 w-5 text-destructive" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-destructive mb-1">Registration Rejected</h3>
+                                        <p className="text-sm text-destructive/80">
+                                            Your club registration was not approved. Please contact your college admin for more information.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {activeTab === 'dashboard' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-sm font-medium text-blue-400">Announcements</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-4xl font-bold text-white">{stats?.announcement_count ?? '-'}</div>
+                                            <p className="text-xs text-muted-foreground mt-1">Published updates</p>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-sm font-medium text-amber-400">Active Registrations</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-4xl font-bold text-white">{stats?.active_registrations ?? '-'}</div>
+                                            <p className="text-xs text-muted-foreground mt-1">Ongoing events</p>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-sm font-medium text-purple-400">Total Views</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-4xl font-bold text-white">{stats?.total_views ?? '-'}</div>
+                                            <p className="text-xs text-muted-foreground mt-1">Club page visits</p>
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
+
+                                {/* Quick Actions */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <Card className="border-white/10 bg-card/50">
+                                        <CardHeader>
+                                            <CardTitle>Quick Actions</CardTitle>
+                                            <CardDescription>Manage your club content</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <Button variant="outline" className="w-full justify-between group border-white/10 hover:bg-white/5" onClick={() => setActiveTab('announcements')}>
+                                                <span className="flex items-center"><Megaphone className="mr-2 h-4 w-4 text-muted-foreground" /> Post Announcement</span>
+                                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                            </Button>
+                                            <Button variant="outline" className="w-full justify-between group border-white/10 hover:bg-white/5" onClick={() => setActiveTab('registrations')}>
+                                                <span className="flex items-center"><Calendar className="mr-2 h-4 w-4 text-muted-foreground" /> Create Registration</span>
+                                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                            </Button>
+                                            <Button variant="outline" className="w-full justify-between group border-white/10 hover:bg-white/5" onClick={() => setActiveTab('settings')}>
+                                                <span className="flex items-center"><Settings className="mr-2 h-4 w-4 text-muted-foreground" /> Edit Club Details</span>
+                                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-white/10 bg-card/50">
+                                        <CardHeader>
+                                            <CardTitle>Recent Activity</CardTitle>
+                                            <CardDescription>Latest updates from your club</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-center py-8 text-muted-foreground text-sm">
+                                                Activity feed coming soon...
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {activeTab === 'announcements' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                                <Card className="border-white/10 bg-card/50">
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle>Announcements</CardTitle>
+                                            <CardDescription>Post updates for your club members</CardDescription>
+                                        </div>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button className="bg-primary hover:bg-primary/90">
+                                                    <Plus className="mr-2 h-4 w-4" /> New Post
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>New Announcement</DialogTitle>
+                                                    <DialogDescription>Post an update for your club members</DialogDescription>
+                                                </DialogHeader>
+                                                <form onSubmit={handlePostAnnouncement} className="space-y-4 mt-4">
+                                                    <div>
+                                                        <label className="text-sm font-medium mb-1.5 block">Title</label>
+                                                        <Input name="title" required placeholder="Announcement Title" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium mb-1.5 block">Content</label>
+                                                        <Textarea
+                                                            name="content"
+                                                            required
+                                                            placeholder="Write your announcement here..."
+                                                            className="min-h-[150px]"
+                                                        />
+                                                    </div>
+                                                    <Button type="submit" className="w-full" disabled={loading}>
+                                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Post Announcement'}
+                                                    </Button>
+                                                </form>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-center py-12 text-muted-foreground">
+                                            <Megaphone className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                            <p>No announcements yet. Create your first post!</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        )}
+
+                        {activeTab === 'registrations' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                                <Card className="border-white/10 bg-card/50">
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle>Registrations</CardTitle>
+                                            <CardDescription>Manage recruitment drives and event signups</CardDescription>
+                                        </div>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button className="bg-primary hover:bg-primary/90">
+                                                    <Plus className="mr-2 h-4 w-4" /> Add Link
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Add Registration Link</DialogTitle>
+                                                    <DialogDescription>Create a new registration event</DialogDescription>
+                                                </DialogHeader>
+                                                <form onSubmit={handleAddRegistration} className="space-y-4 mt-4">
+                                                    <div>
+                                                        <label className="text-sm font-medium mb-1.5 block">Event Title</label>
+                                                        <Input name="title" required placeholder="e.g. Winter Recruitment 2024" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium mb-1.5 block">Registration Link</label>
+                                                        <Input name="link" type="url" required placeholder="https://forms.google.com/..." />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium mb-1.5 block">Deadline (Optional)</label>
+                                                        <Input name="deadline" type="datetime-local" />
+                                                    </div>
+                                                    <Button type="submit" className="w-full" disabled={loading}>
+                                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Registration'}
+                                                    </Button>
+                                                </form>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-center py-12 text-muted-foreground">
+                                            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                            <p>No active registrations. Add a link to get started!</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        )}
+
+                        {activeTab === 'settings' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                                <Card className="border-white/10 bg-card/50">
+                                    <CardHeader>
+                                        <CardTitle>Club Settings</CardTitle>
+                                        <CardDescription>Update your club's public profile</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form onSubmit={handleUpdateDetails} className="space-y-6 max-w-2xl">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Description</label>
+                                                <Textarea
+                                                    name="description"
+                                                    placeholder="About your club..."
+                                                    className="min-h-[100px] bg-white/5 border-white/10"
+                                                    defaultValue={adminData?.description}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">Email</label>
+                                                    <Input name="email" type="email" defaultValue={adminData?.email} className="bg-white/5 border-white/10" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">Phone</label>
+                                                    <Input name="phone" type="tel" defaultValue={adminData?.phone} className="bg-white/5 border-white/10" />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">Website</label>
+                                                    <Input name="website" type="url" placeholder="https://" defaultValue={adminData?.website} className="bg-white/5 border-white/10" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">Instagram</label>
+                                                    <Input name="instagram" placeholder="@username" defaultValue={adminData?.instagram} className="bg-white/5 border-white/10" />
+                                                </div>
+                                            </div>
+                                            <Button type="submit" disabled={loading}>
+                                                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                                            </Button>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        )}
+                    </div>
+                </main>
             </div>
         </div>
     );

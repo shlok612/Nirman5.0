@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({
+const outfit = Outfit({
     subsets: ["latin"],
     display: 'swap',
-    variable: '--font-inter',
+    variable: '--font-outfit',
 });
 
 export const metadata: Metadata = {
@@ -57,10 +57,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className={inter.variable}>
-            <body className="min-h-screen flex flex-col antialiased">
+        <html lang="en" className={`${outfit.variable} dark`}>
+            <body className="min-h-screen flex flex-col antialiased font-sans bg-background text-foreground selection:bg-primary/30">
                 <Navbar />
-                <main className="flex-1">
+                <main className="flex-1 relative z-10">
                     {children}
                 </main>
                 <Footer />

@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export function SearchBar() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -15,9 +15,13 @@ export function SearchBar() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            // Check if it's a college ID format
-            if (searchQuery.match(/^CLG-[A-Z]+$/i)) {
-                router.push(`/college/${searchQuery.toUpperCase()}`);
+            // Check if it looks like a college ID (starts with CLG-)
+            if (searchQuery.toUpperCase().startsWith('CLG-')) {
+                // If it's a full ID format, we can use ID param, but for partials, let's use search
+                // Actually, the backend search param handles both name and ID via ILIKE, 
+                // so we can just use search for everything unless we want strict ID lookup.
+                // Let's use search for everything to be safe and flexible.
+                router.push(`/colleges?search=${encodeURIComponent(searchQuery)}`);
             } else {
                 router.push(`/colleges?search=${encodeURIComponent(searchQuery)}`);
             }
@@ -26,71 +30,36 @@ export function SearchBar() {
 
     return (
         <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
             onSubmit={handleSearch}
-            className="w-full"
+            className="w-full max-w-2xl mx-auto relative"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
         >
-            <div className="relative group">
-                {/* Glow effect on focus */}
-                {isFocused && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur-xl opacity-30"
-                    />
-                )}
+            <div className={`relative group transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-purple-600/50 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
 
-                <div className="relative glass-card p-2 rounded-3xl border-white/10">
-                    <div className="flex items-center gap-2">
-                        <div className="pl-4">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <Input
-                            type="text"
-                            placeholder="Enter College Code (CLG-SOAITER) or Search by Name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            className="flex-1 bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 h-12 text-base"
-                            aria-label="Search for colleges"
-                        />
-                        <Button
-                            type="submit"
-                            size="lg"
-                            className="rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 shadow-lg hover:shadow-purple-500/50 transition-all duration-300"
-                        >
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Search
-                        </Button>
-                    </div>
+                <div className="relative bg-background/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl overflow-hidden flex items-center">
+                    <Search className={`ml-4 h-5 w-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Input
+                        type="text"
+                        placeholder="Enter College Code (CLG-XXXXXX) or Search by Name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        className="border-0 bg-transparent h-14 text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+                        aria-label="Search for colleges"
+                    />
+                    <Button
+                        type="submit"
+                        size="lg"
+                        className="m-1 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-primary/25 transition-all duration-300"
+                    >
+                        Search
+                    </Button>
                 </div>
             </div>
-
-            {/* Quick tips */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="mt-4 flex gap-2 flex-wrap"
-            >
-                <span className="text-xs text-gray-500">Try:</span>
-                {['CLG-SOAITER', 'CLG-SILICON', 'Technical Clubs'].map((tip, index) => (
-                    <motion.button
-                        key={tip}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + index * 0.1 }}
-                        type="button"
-                        onClick={() => setSearchQuery(tip)}
-                        className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-purple-500/50 transition-all duration-200"
-                    >
-                        {tip}
-                    </motion.button>
-                ))}
-            </motion.div>
         </motion.form>
     );
 }

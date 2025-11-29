@@ -2,26 +2,9 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-// Simple .env parser
-function loadEnv() {
-    try {
-        const envPath = path.join(__dirname, '..', '.env');
-        if (fs.existsSync(envPath)) {
-            const envConfig = fs.readFileSync(envPath, 'utf8');
-            envConfig.split('\n').forEach(line => {
-                const [key, value] = line.split('=');
-                if (key && value) {
-                    process.env[key.trim()] = value.trim();
-                }
-            });
-            console.log('Loaded environment variables from .env');
-        }
-    } catch (e) {
-        console.log('Could not load .env file, relying on system environment variables');
-    }
-}
-
-loadEnv();
+// Load .env.local first (overrides .env)
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 if (!process.env.DATABASE_URL) {
     console.error('Error: DATABASE_URL is not defined in .env or environment variables');

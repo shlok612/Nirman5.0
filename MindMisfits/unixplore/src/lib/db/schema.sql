@@ -3,6 +3,16 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Drop tables if they exist
+DROP TABLE IF EXISTS analytics CASCADE;
+DROP TABLE IF EXISTS registrations CASCADE;
+DROP TABLE IF EXISTS announcements CASCADE;
+DROP TABLE IF EXISTS club_admins CASCADE;
+DROP TABLE IF EXISTS clubs CASCADE;
+DROP TABLE IF EXISTS college_admins CASCADE;
+DROP TABLE IF EXISTS colleges CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+
 -- Categories table (predefined)
 CREATE TABLE categories (
   id SERIAL PRIMARY KEY,

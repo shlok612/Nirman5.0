@@ -59,19 +59,25 @@ export default function CollegesPage() {
     }, [fetchColleges]);
 
     const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const params = new URLSearchParams();
+    e.preventDefault();
+    const params = new URLSearchParams();
 
-        if (searchQuery.toUpperCase().startsWith('CLG-')) {
-            // Use search param for flexibility
-            params.append('search', searchQuery);
-        } else if (searchQuery) {
-            params.append('search', searchQuery);
-        }
+    // If user enters a College ID → send ?id=CLG-XXXXXX
+    if (searchQuery.toUpperCase().startsWith("CLG-")) {
+        params.append("id", searchQuery.toUpperCase());
+    } 
+    // Otherwise → name search
+    else if (searchQuery.trim() !== "") {
+        params.append("search", searchQuery);
+    }
 
-        window.history.pushState({}, '', `/colleges?${params.toString()}`);
-        fetchColleges();
-    };
+    // Push URL
+    window.history.pushState({}, "", `/colleges?${params.toString()}`);
+
+    // Refetch
+    fetchColleges();
+};
+
 
     return (
         <div className="min-h-screen bg-black relative overflow-hidden">

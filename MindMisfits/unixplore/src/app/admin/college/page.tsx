@@ -37,9 +37,10 @@ export default function CollegeAdminPage() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [pendingClubs, setPendingClubs] = useState<PendingClub[]>([]);
     const [credentials, setCredentials] = useState({
-        email: '',
-        password: '',
-    });
+    collegeId: '',
+    password: '',
+});
+
     const [activeTab, setActiveTab] = useState('dashboard');
 
     useEffect(() => {
@@ -83,7 +84,11 @@ export default function CollegeAdminPage() {
             const response = await fetch('/api/auth/college/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials),
+                body: JSON.stringify({
+    collegeId: credentials.collegeId,
+    adminPassword: credentials.password,
+}),
+
             });
 
             const data = await response.json();
@@ -166,80 +171,86 @@ export default function CollegeAdminPage() {
     };
 
     if (!isLoggedIn) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-black relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-purple-900/20 to-black z-0" />
-                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 z-0" />
+    return (
+        <div className="min-h-screen flex items-center justify-center p-4 bg-black relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-purple-900/20 to-black z-0" />
+            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 z-0" />
 
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="max-w-md w-full relative z-10"
-                >
-                    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
-                        <CardHeader className="text-center pb-2">
-                            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mb-4">
-                                <Building2 className="h-8 w-8 text-primary" />
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="max-w-md w-full relative z-10"
+            >
+                <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+                    <CardHeader className="text-center pb-2">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mb-4">
+                            <Building2 className="h-8 w-8 text-primary" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-white">College Admin Login</CardTitle>
+                        <CardDescription>Use your College ID and admin password</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            {error && (
+                                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                                    {error}
+                                </div>
+                            )}
+
+                            {/* COLLEGE ID */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">College ID</label>
+                                <Input
+                                    required
+                                    value={credentials.collegeId}
+                                    onChange={(e) => setCredentials({ ...credentials, collegeId: e.target.value })}
+                                    placeholder="CLG-123456"
+                                    className="bg-white/5 border-white/10 focus:border-primary"
+                                />
                             </div>
-                            <CardTitle className="text-2xl font-bold text-white">College Admin</CardTitle>
-                            <CardDescription>Login to manage your institution</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                {error && (
-                                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-                                        {error}
-                                    </div>
+
+                            {/* PASSWORD */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">Admin Password</label>
+                                <Input
+                                    required
+                                    type="password"
+                                    value={credentials.password}
+                                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                                    placeholder="••••••••"
+                                    className="bg-white/5 border-white/10 focus:border-primary"
+                                />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full h-11 bg-primary hover:bg-primary/90"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Logging in...
+                                    </>
+                                ) : (
+                                    'Login to Dashboard'
                                 )}
+                            </Button>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Email</label>
-                                    <Input
-                                        required
-                                        type="email"
-                                        value={credentials.email}
-                                        onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                                        placeholder="admin@college.edu"
-                                        className="bg-white/5 border-white/10 focus:border-primary"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Password</label>
-                                    <Input
-                                        required
-                                        type="password"
-                                        value={credentials.password}
-                                        onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                        placeholder="••••••••"
-                                        className="bg-white/5 border-white/10 focus:border-primary"
-                                    />
-                                </div>
-
-                                <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90" disabled={loading}>
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Logging in...
-                                        </>
-                                    ) : (
-                                        'Login to Dashboard'
-                                    )}
-                                </Button>
-
-                                <p className="text-sm text-center text-muted-foreground">
-                                    Don&apos;t have an account?{' '}
-                                    <a href="/register/college" className="text-primary hover:underline font-medium">
-                                        Register College
-                                    </a>
-                                </p>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
-        );
-    }
+                            <p className="text-sm text-center text-muted-foreground">
+                                Don&apos;t have an account?{' '}
+                                <a href="/register/college" className="text-primary hover:underline font-medium">
+                                    Register College
+                                </a>
+                            </p>
+                        </form>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        </div>
+    );
+}
 
     return (
         <div className="min-h-screen bg-background flex">
